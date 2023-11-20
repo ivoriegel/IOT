@@ -3,6 +3,7 @@
 #include <DHT.h>
 #include <WiFiClientSecure.h>
 #include <WebServer.h>
+#include <NTPClient.h>
 
 
 #define DHTTYPE DHT11  // DHT 11
@@ -18,6 +19,8 @@ int DHTPin = 33;
 int relePin = 23;
 int valvePin;
 bool releState;
+String macaddress;
+String hora_captura;
 
 
 
@@ -25,6 +28,9 @@ bool releState;
 /* Put your SSID & Password */
 const char* ssid = "CLARO_2GDAEF04";   // Enter SSID here CLARO_2GDAEF04 moto g(6) 5049
 const char* password = "8BDAEF04Ivo";  // Enter Password here 8BDAEF04Ivo 271102niver
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
 
 /* MQTT Broker configuração */
 const char* mqtt_server = "c6ce1af45cca4e2699b2eff083bc5a9a.s1.eu.hivemq.cloud"; // replace with your broker URL
@@ -36,6 +42,8 @@ const char* sensor2_topic = "temperatura";
 const char* sensor3_topic = "umidade";
 const char* sensor4_topic = "valvula";
 const char* sensor5_topic = "rele";
+const char* sensor6_topic = "macaddress";
+const char* sensor7_topic = "hora_captura";
 
 
 const char* root_ca = \
@@ -99,6 +107,8 @@ void setup() {
 
   // Connect to your local Wi-Fi network
   WiFi.begin(ssid, password);
+  timeClient.begin();
+  timeClient.setTimeOffset(-10800);
 
   // Check Wi-Fi connection
   while (WiFi.status() != WL_CONNECTED) {
@@ -111,8 +121,8 @@ void setup() {
   Serial.println(WiFi.localIP());
   Serial.print("Acesso no IPv6: ");
   Serial.println(WiFi.localIPv6());
- 
 
+  
   espClient.setCACert(root_ca);
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
@@ -127,6 +137,10 @@ void loop() {
   client.loop();
   server.handleClient();
   unsigned long currentMillis = millis();
+  
+  timeClient.update();
+  hora_captura = timeClient.getFormattedTime();
+  macaddress = WiFi.macAddress();
 
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
@@ -149,6 +163,10 @@ void loop() {
       Serial.println("Relé: "+ String(releState));
       digitalWrite(greenLed, LOW);
       digitalWrite(redLed, HIGH);
+
+      
+      Serial.println("Meu macAddress: "+ macaddress);
+      Serial.println("Hora caputra: "+ hora_captura);
     } else {
       Serial.println("Gás digital: "+ String(gassensorDigital));
       Serial.println("Sem Gás: "+ String(gasValue));
@@ -161,6 +179,9 @@ void loop() {
       Serial.println("Relé: "+ String(releState));
       digitalWrite(greenLed, HIGH);
       digitalWrite(redLed, LOW);
+
+      Serial.println("Meu macAddress: "+ macaddress);
+      Serial.println("Hora caputra: "+ hora_captura);
     }
 
     // Publish sensor data to MQTT topics
@@ -169,6 +190,8 @@ void loop() {
     publishMessage(sensor3_topic, String(Humidity), true);
     publishMessage(sensor4_topic, String(valveState),true);
     publishMessage(sensor5_topic, String(releState),true);
+    publishMessage(sensor6_topic, String(macaddress),true);
+    publishMessage(sensor7_topic, String(hora_captura),true);
   }
 }
 
@@ -188,6 +211,7 @@ void reconnect() {
       client.subscribe(sensor3_topic); // subscribe to the topics here
       client.subscribe(sensor4_topic); // subscribe to the topics here
       client.subscribe(sensor5_topic); // subscribe to the topics here
+      client.subscribe(sensor6_topic); // subscribe to the topics here
     } else {
       Serial.print("Falha na conexão com, rc=");
       Serial.print(client.state());
