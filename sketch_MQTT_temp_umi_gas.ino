@@ -4,6 +4,7 @@
 #include <WiFiClientSecure.h>
 #include <WebServer.h>
 #include <NTPClient.h>
+#include <WiFiManager.h>  // Adiciona a biblioteca WiFiManager
 
 
 #define DHTTYPE DHT11  // DHT 11
@@ -26,10 +27,11 @@ String hora_captura;
 
 
 /* Put your SSID & Password */
-const char* ssid = "CLARO_2GDAEF04";   // Enter SSID here CLARO_2GDAEF04 moto g(6) 5049
-const char* password = "8BDAEF04Ivo";  // Enter Password here 8BDAEF04Ivo 271102niver
+//const char* ssid = "CLARO_2GDAEF04";   // Enter SSID here CLARO_2GDAEF04 moto g(6) 5049
+//const char* password = "8BDAEF04Ivo";  // Enter Password here 8BDAEF04Ivo 271102niver
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
 
 
 /* MQTT Broker configuração */
@@ -90,25 +92,35 @@ float Temperature;
 float Humidity;
 int valveState = LOW;
 
+
 void setup() {
   Serial.begin(9600);
   pinMode(greenLed, OUTPUT);
   pinMode(redLed, OUTPUT);
   pinMode(Gas_digital, INPUT);
   pinMode(relePin, OUTPUT);
-  //pinMode(valvePin,OUTPUT);
+
+  WiFiManager wifiManager;  // Cria uma instância do WiFiManager
+  wifiManager.autoConnect("AutoConnectAP");  // Tenta conectar-se ao WiFi, se falhar, inicia um ponto de acesso
 
   delay(100);
   pinMode(DHTPin, INPUT);
   dht.begin();
+  
 
   Serial.println("###################################");
-  Serial.print("Conectando rede: "+String(ssid));
+  //Serial.print("Conectando rede: "+String(ssid));
 
   // Connect to your local Wi-Fi network
+  String ssid = wifiManager.getWiFiSSID();
+  String password = wifiManager.getWiFiPass();
   WiFi.begin(ssid, password);
   timeClient.begin();
   timeClient.setTimeOffset(-10800);
+
+  espClient.setCACert(root_ca);
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
 
   // Check Wi-Fi connection
   while (WiFi.status() != WL_CONNECTED) {
@@ -116,16 +128,12 @@ void setup() {
     Serial.print(".");
   }
   Serial.println("");
+  Serial.print("Conectando rede: "+String(ssid));
   Serial.println("WiFi Conectada com Sucesso..!");
   Serial.print("Acesso no IPv4: ");
   Serial.println(WiFi.localIP());
   Serial.print("Acesso no IPv6: ");
   Serial.println(WiFi.localIPv6());
-
-  
-  espClient.setCACert(root_ca);
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
 
 }
 
