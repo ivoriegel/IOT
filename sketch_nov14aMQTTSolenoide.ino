@@ -149,6 +149,9 @@ void reconnect()
     }
 }
 
+unsigned long lastStatusUpdate = 0;
+bool firstReading = true;
+
 void callback(char *topic, byte *payload, unsigned int length)
 {
     Serial.print("Messagem recebida do topico: ");
@@ -174,6 +177,41 @@ void callback(char *topic, byte *payload, unsigned int length)
             solenoidState = true;
             digitalWrite(Solenoid, HIGH);
             Serial.println("Válvula Solenoide: Ligada!");
+
+            // Enviar o status da leitura para um novo tópico
+            String statusTopic = "status_valvula";
+            String statusMessage = (solenoidState ? "Ligada" : "Desligada");
+            client.publish(statusTopic.c_str(), statusMessage.c_str());
+
+            // Verificar se é a primeira leitura
+            if (firstReading)
+            {
+                firstReading = false;
+                lastStatusUpdate = millis(); // Registrar o tempo da primeira leitura
+            }
+            else if (millis() - lastStatusUpdate > 15000) // 15000 ms = 15 segundos
+            {
+                // Enviar os dados de data, hora e MAC address
+                time_t now;
+                struct tm timeinfo;
+                if (getLocalTime(&timeinfo))
+                {
+                    char dateBuffer[20];
+                    char timeBuffer[20];
+                    strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", &timeinfo);
+                    strftime(timeBuffer, sizeof(timeBuffer), "%H:%M:%S", &timeinfo);
+
+                    client.publish(date_topic, dateBuffer);
+                    client.publish(time_topic, timeBuffer);
+
+                    String macAddress = WiFi.macAddress();
+                    client.publish(mac_topic, macAddress.c_str());
+
+                    // Atualizar o tempo da última atualização
+                    lastStatusUpdate = millis();
+                }
+            }
         }
     }
 }
+
