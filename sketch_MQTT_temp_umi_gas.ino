@@ -9,6 +9,7 @@
 
 #define DHTTYPE DHT11  // DHT 11
 #define MAX_LEN 50
+#define WIFI_LED_INTERVAL 3000 // Intervalo em milissegundos para o LED vermelho intermitente
 int redLed = 32;
 int greenLed = 26;
 int Gas_analog = 39;
@@ -100,16 +101,17 @@ void setup() {
   pinMode(Gas_digital, INPUT);
   pinMode(relePin, OUTPUT);
 
-  WiFiManager wifiManager;  // Cria uma instância do WiFiManager
-  wifiManager.autoConnect("AutoConnectAP");  // Tenta conectar-se ao WiFi, se falhar, inicia um ponto de acesso
 
+  WiFiManager wifiManager;  // Cria uma instância do WiFiManager
+  wifiManager.autoConnect("AutoConnectAPESP32");  // Tenta conectar-se ao WiFi, se falhar, inicia um ponto de acesso
+  
   delay(100);
   pinMode(DHTPin, INPUT);
   dht.begin();
   
 
   Serial.println("###################################");
-  //Serial.print("Conectando rede: "+String(ssid));
+
 
   // Connect to your local Wi-Fi network
   String ssid = wifiManager.getWiFiSSID();
@@ -117,8 +119,9 @@ void setup() {
   WiFi.begin(ssid, password);
   timeClient.begin();
   timeClient.setTimeOffset(-10800);
+  
 
-  espClient.setCACert(root_ca);
+  espClient.setCACert(root_ca); //root_ca
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
@@ -220,6 +223,7 @@ void reconnect() {
       client.subscribe(sensor4_topic); // subscribe to the topics here
       client.subscribe(sensor5_topic); // subscribe to the topics here
       client.subscribe(sensor6_topic); // subscribe to the topics here
+      client.subscribe(sensor7_topic); // subscribe to the topics here
     } else {
       Serial.print("Falha na conexão com, rc=");
       Serial.print(client.state());
@@ -247,13 +251,28 @@ void callback(char* topic, byte* payload, unsigned int length) {
       Serial.println("Relé: Desligado!");
     }
    }
-   //Serial.println("Mensagem: "+ message);
 }
 
-void publishMessage(const char* topic, String payload, boolean retained) {
-  if (client.publish(topic, payload.c_str(), retained)) {
-    Serial.println("Message published [" + String(topic) + "]: " + payload);
+
+void publishMessage(const char* topic, String payload, bool retained) {
+  const char* payloadStr = payload.c_str();
+
+  if (retained) {
+    client.beginPublish(topic, strlen(payloadStr), true);
+    client.write((const uint8_t*)payloadStr, strlen(payloadStr));
+    client.endPublish();
+  } else {
+    client.publish(topic, payloadStr);
   }
+
+  Serial.println("Message published [" + String(topic) + "]: " + payload);
 }
+
+
+
+
+
+
+
 
 
