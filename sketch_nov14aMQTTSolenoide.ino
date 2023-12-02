@@ -171,6 +171,11 @@ void callback(char *topic, byte *payload, unsigned int length)
             solenoidState = false;
             digitalWrite(Solenoid, LOW);
             Serial.println("Válvula Solenoide: Desligada!");
+
+            // Enviar o status "Desligada" para o tópico "valvula_status"
+            String statusTopic = "valvula_status";
+            String statusMessage = "Desligada";
+            client.publish(statusTopic.c_str(), statusMessage.c_str());
         }
         else
         {
@@ -178,9 +183,9 @@ void callback(char *topic, byte *payload, unsigned int length)
             digitalWrite(Solenoid, HIGH);
             Serial.println("Válvula Solenoide: Ligada!");
 
-            // Enviar o status da leitura para um novo tópico
-            String statusTopic = "status_valvula";
-            String statusMessage = (solenoidState ? "Ligada" : "Desligada");
+            // Enviar o status "Ligada" para o tópico "valvula_status"
+            String statusTopic = "valvula_status";
+            String statusMessage = "Ligada";
             client.publish(statusTopic.c_str(), statusMessage.c_str());
 
             // Verificar se é a primeira leitura
@@ -214,4 +219,5 @@ void callback(char *topic, byte *payload, unsigned int length)
         }
     }
 }
+
 
