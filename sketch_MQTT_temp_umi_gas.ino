@@ -31,7 +31,7 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 
 /* MQTT Broker configuração */
-const char* mqtt_server = "c6ce1af45cca4e2699b2eff083bc5a9a.s1.eu.hivemq.cloud"; // replace with your broker URL
+const char* mqtt_server = "s1.eu.hivemq.cloud"; // Seu servidor broker mqtt
 const char* mqtt_username = "#####"; //Seu usuário do broker mqtt
 const char* mqtt_password = "#####";  //Sua senha do broker mqtt
 const int mqtt_port = 8883;
