@@ -25,11 +25,6 @@ String macaddress;
 String hora_captura;
 
 
-
-
-/* Put your SSID & Password */
-//const char* ssid = "CLARO_2GDAEF04";   // Enter SSID here CLARO_2GDAEF04 moto g(6) 5049
-//const char* password = "8BDAEF04Ivo";  // Enter Password here 8BDAEF04Ivo 271102niver
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
@@ -37,8 +32,8 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 /* MQTT Broker configuração */
 const char* mqtt_server = "c6ce1af45cca4e2699b2eff083bc5a9a.s1.eu.hivemq.cloud"; // replace with your broker URL
-const char* mqtt_username = "ivo.riegel";
-const char* mqtt_password = "mqttUdesc2023";
+const char* mqtt_username = "#####"; //Seu usuário do broker mqtt
+const char* mqtt_password = "#####";  //Sua senha do broker mqtt
 const int mqtt_port = 8883;
 const char* sensor1_topic = "gas";
 const char* sensor2_topic = "temperatura";
@@ -158,8 +153,8 @@ void loop() {
 
     int gasValue = analogRead(Gas_analog);
     int gassensorDigital = digitalRead(Gas_digital);
-    Temperature = dht.readTemperature();  // Gets the values of the temperature
-    Humidity = dht.readHumidity(); // Gets the values of the umidity
+    Temperature = dht.readTemperature(); 
+    Humidity = dht.readHumidity();
 
   
     if (gasValue > sensorThreshold) {
