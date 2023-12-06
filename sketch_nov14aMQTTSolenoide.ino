@@ -6,9 +6,9 @@
 #include <WiFiManager.h>
 #include <TimeLib.h>
 
-const char *mqtt_server = "c6ce1af45cca4e2699b2eff083bc5a9a.s1.eu.hivemq.cloud";
-const char *mqtt_username = "ivo.riegel";
-const char *mqtt_password = "mqttUdesc2023";
+const char *mqtt_server = "s1.eu.hivemq.cloud"; //Seu servidor mqtt
+const char *mqtt_username = "#####";  //Seu usuário do broker mqtt
+const char *mqtt_password = "#####";  //Sua senha do broker mqtt
 const int mqtt_port = 8883;
 const char *sensor4_topic = "valvula";
 const char *date_topic = "data_acionamento";
@@ -110,7 +110,7 @@ void loop()
         }
 
         // Se passou tempo suficiente desde o último acionamento, redefinir o estado
-        if (millis() - lastSolenoidTime > 60000) // 60000 ms = 1 minuto
+        if (millis() - lastSolenoidTime > 15000) // 15000ms = 15 segundos 60000
         {
             solenoidState = false;
         }
