@@ -1,10 +1,10 @@
-#include <WiFi.h>
-#include <PubSubClient.h>
-#include <DHT.h>
-#include <WiFiClientSecure.h>
-#include <WebServer.h>
-#include <NTPClient.h>
-#include <WiFiManager.h>  // Adiciona a biblioteca WiFiManager
+#include <WiFi.h> // Adiciona a biblioteca WiFi
+#include <PubSubClient.h> // Adiciona a biblioteca PubSubClient
+#include <DHT.h> // Adiciona a biblioteca DHT
+#include <WiFiClientSecure.h> // Adiciona a biblioteca WiFiClientSecure
+#include <WebServer.h> // Adiciona a biblioteca WebServer
+#include <NTPClient.h> // Adiciona a biblioteca NTPClient para atualizar o horário de envio dos dados
+#include <WiFiManager.h>  // Adiciona a biblioteca WiFiManager para criar ap de configuração da conexão Wifi
 
 
 #define DHTTYPE DHT11  // DHT 11
@@ -116,7 +116,7 @@ void setup() {
   timeClient.setTimeOffset(-10800);
   
 
-  espClient.setCACert(root_ca); //root_ca
+  espClient.setCACert(root_ca); //root_ca Configura o certificado CA para conexão segura
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
@@ -156,8 +156,10 @@ void loop() {
     Temperature = dht.readTemperature(); 
     Humidity = dht.readHumidity();
 
-  
-    if (gasValue > sensorThreshold) {
+   // Lógica para tratar a leitura dos sensores e controlar os LEDs
+    if (gasValue > sensorThreshold) { // Se houver gás, ativa a válvula, o relé e acende o LED vermelho 
+     //Publica os dados no tópico MQTT correspondente
+     
       Serial.println("Gás digital: "+ String(gassensorDigital));
       Serial.println("Presença de Gás: "+ String(gasValue));
       Serial.println("Temperatura: "+ String(Temperature));
@@ -173,7 +175,9 @@ void loop() {
       
       Serial.println("Meu macAddress: "+ macaddress);
       Serial.println("Hora caputra: "+ hora_captura);
-    } else {
+    } else { // Se não houver gás, desativa a válvula, o relé e acende o LED verde
+      // Publica os dados no tópico MQTT correspondente
+     
       Serial.println("Gás digital: "+ String(gassensorDigital));
       Serial.println("Sem Gás: "+ String(gasValue));
       Serial.println("Temperatura: "+ String(Temperature));
@@ -190,7 +194,7 @@ void loop() {
       Serial.println("Hora caputra: "+ hora_captura);
     }
 
-    // Publish sensor data to MQTT topics
+    // Publica dados dos sensores nos tópicos MQTT correspondentes
     publishMessage(sensor1_topic, String(gasValue), true);
     publishMessage(sensor2_topic, String(Temperature), true);
     publishMessage(sensor3_topic, String(Humidity), true);
@@ -203,14 +207,14 @@ void loop() {
 
 
 
-
+// Função para reconectar ao broker MQTT
 void reconnect() {
   while (!client.connected()) {
     Serial.println("#######Tentando conexão MQTT#######");
-    String clientId = "ESP32Client-"; // Create a random client ID
+    String clientId = "ESP32Client-"; // Cria um ID de cliente aleatório
     clientId += String(random(0xffff), HEX);
 
-    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
+    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) { // Conectado com sucesso, inscreve-se nos tópicos MQTT
       Serial.println("#####Conectado ao Broker MQTT!#####");
       client.subscribe(sensor1_topic); // subscribe to the topics here
       client.subscribe(sensor2_topic); // subscribe to the topics here
@@ -219,7 +223,7 @@ void reconnect() {
       client.subscribe(sensor5_topic); // subscribe to the topics here
       client.subscribe(sensor6_topic); // subscribe to the topics here
       client.subscribe(sensor7_topic); // subscribe to the topics here
-    } else {
+    } else { // Falha na conexão, tenta novamente após 5 segundos
       Serial.print("Falha na conexão com, rc=");
       Serial.print(client.state());
       Serial.println(" Tente novamente em 5 segundos");
@@ -228,7 +232,8 @@ void reconnect() {
   }
 }
 
-void callback(char* topic, byte* payload, unsigned int length) {
+// Função de retorno de chamada para mensagens MQTT recebidas
+void callback(char* topic, byte* payload, unsigned int length) {  // Lida com mensagens recebidas nos tópicos MQTT
    Serial.print("Messagem recebida do topico: ");
    Serial.println(topic);
 
@@ -248,15 +253,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
    }
 }
 
-
-void publishMessage(const char* topic, String payload, bool retained) {
+// Função para publicar mensagens nos tópicos MQTT correspondentes
+void publishMessage(const char* topic, String payload, bool retained) { // Lida com mensagens recebidas nos tópicos MQTT
   const char* payloadStr = payload.c_str();
 
-  if (retained) {
+  if (retained) { // Publica a mensagem com retenção
     client.beginPublish(topic, strlen(payloadStr), true);
     client.write((const uint8_t*)payloadStr, strlen(payloadStr));
     client.endPublish();
-  } else {
+  } else { // Publica a mensagem sem retenção
     client.publish(topic, payloadStr);
   }
 
