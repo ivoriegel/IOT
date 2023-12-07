@@ -1,10 +1,10 @@
-#include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
-#include <PubSubClient.h>
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>
-#include <TimeLib.h>
+#include <ESP8266WiFi.h> //Adiciona biblioteca ESP8266WiFi
+#include <WiFiClientSecure.h> //Adiciona biblioteca WiFiClientSecure
+#include <PubSubClient.h> //Adiciona biblioteca PubSubClient
+#include <DNSServer.h> //Adiciona biblioteca DNSServer
+#include <ESP8266WebServer.h> //Adiciona biblioteca ESP8266WebServer
+#include <WiFiManager.h> //Adiciona biblioteca WiFiManager para criar ap de configuração Wifi
+#include <TimeLib.h> //Adiciona biblioteca TimeLibe controlar horário de envio dos dados
 
 const char *mqtt_server = "s1.eu.hivemq.cloud"; //Seu servidor mqtt
 const char *mqtt_username = "#####";  //Seu usuário do broker mqtt
