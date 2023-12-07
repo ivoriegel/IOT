@@ -6,6 +6,9 @@ O projeto "Dispositivo para Monitoramento de Temperatura, Umidade e Fumaça em A
 
 Além das informações de qualidade do ar, o dispositivo "A1" também envia dados de temperatura e umidade, juntamente com a identificação do microcontrolador utilizado para controle e transmissão das informações. Por outro lado, o microcontrolador "B1" é encarregado de ler as informações publicadas no Broker MQTT e acionar uma válvula solenoide para dispersão de água no ambiente. 
 
+![image](https://github.com/ivoriegel/IOT/assets/67620383/117d42e3-cd7a-4c75-b6d5-8a9cfff6b6cf)
+
+
 # Comunicação e Desenvolvimento Aberto
 O projeto utiliza hardwares de baixo custo e adota soluções de comunicação e desenvolvimento de código aberto. A comunicação entre os dispositivos é realizada por meio do protocolo MQTT, proporcionando uma arquitetura flexível e escalável.
 
